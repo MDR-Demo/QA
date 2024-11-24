@@ -67,10 +67,45 @@
             color: #fff;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
+        #timeDisplay {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .time-item {
+            text-align: center;
+        }
+        .time-item p:first-child {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div id="timeDisplay">
+            <h2>Current Time</h2>
+            <div class="time-grid">
+                <div class="time-item">
+                    <p>IST</p>
+                    <p id="istTime"></p>
+                </div>
+                <div class="time-item">
+                    <p>EST</p>
+                    <p id="estTime"></p>
+                </div>
+                <div class="time-item">
+                    <p>UTC</p>
+                    <p id="utcTime"></p>
+                </div>
+            </div>
+        </div>
+
         <h1>Query Generator</h1>
         <form id="queryForm">
             <label for="queryType">Select Query Type:</label>
@@ -110,7 +145,10 @@
 
         <h2>Generated KQL Query:</h2>
         <pre id="kqlOutput"></pre>
-        <button onclick="copyToClipboard('kqlOutput')">Copy KQL Query</button>
+        <div style="display: flex; justify-content: space-between;">
+            <button onclick="copyToClipboard('kqlOutput')">Copy KQL Query</button>
+            <button onclick="copyToClipboard('kqlOutput')">Copy Query</button>
+        </div>
 
         <h2>Email Statement:</h2>
         <div id="emailTypeContainer" style="display:none;">
@@ -127,6 +165,21 @@
     </div>
 
     <script>
+        function updateTime() {
+            const now = new Date();
+            
+            const istOptions = { timeZone: 'Asia/Kolkata', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const estOptions = { timeZone: 'America/New_York', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const utcOptions = { timeZone: 'UTC', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+
+            document.getElementById('istTime').textContent = now.toLocaleTimeString('en-US', istOptions);
+            document.getElementById('estTime').textContent = now.toLocaleTimeString('en-US', estOptions);
+            document.getElementById('utcTime').textContent = now.toLocaleTimeString('en-US', utcOptions);
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+
         function toggleQueryInputs() {
             const queryType = document.getElementById('queryType').value;
             document.getElementById('commonInputs').style.display = ['heartbeat', 'lograte', 'heartbeatLatency'].includes(queryType) ? 'block' : 'none';
@@ -145,7 +198,7 @@
             const hostsInput = document.getElementById('hosts').value.trim();
             const hostsArray = hostsInput.split('\n').map(host => host.replace(/ - .*/, '').trim()).filter(host => host);
 
-            const excludedInput = document.getElementById('excludedHosts').value.trim();
+            const excludedInput = document.getElementById('excludedHosts') ? document.getElementById('excludedHosts').value.trim() : '';
             const excludedArray = excludedInput.split('\n').map(host => host.trim()).filter(host => host);
 
             const filteredHostsArray = hostsArray.filter(host => !excludedArray.includes(host));
