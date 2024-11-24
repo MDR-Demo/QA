@@ -144,10 +144,21 @@
         </form>
 
         <h2>Generated KQL Query:</h2>
-        <pre id="kqlOutput"></pre>
-        <div style="display: flex; justify-content: space-between;">
-            <button onclick="copyToClipboard('kqlOutput')">Copy KQL Query</button>
-            <button onclick="copyToClipboard('kqlOutput')">Copy Query</button>
+        <div id="kqlOutputContainer">
+            <div id="usualQueryContainer" style="display:none;">
+                <h3>Usual Query:</h3>
+                <pre id="usualQueryOutput"></pre>
+                <button onclick="copyToClipboard('usualQueryOutput')">Copy Usual Query</button>
+            </div>
+            <div id="noLogsQueryContainer" style="display:none;">
+                <h3>If we are no longer receiving logs:</h3>
+                <pre id="noLogsQueryOutput"></pre>
+                <button onclick="copyToClipboard('noLogsQueryOutput')">Copy No Logs Query</button>
+            </div>
+            <div id="otherQueryContainer" style="display:none;">
+                <pre id="otherQueryOutput"></pre>
+                <button onclick="copyToClipboard('otherQueryOutput')">Copy KQL Query</button>
+            </div>
         </div>
 
         <h2>Email Statement:</h2>
@@ -204,34 +215,42 @@
             const filteredHostsArray = hostsArray.filter(host => !excludedArray.includes(host));
             const hostCondition = filteredHostsArray.map(host => `Computer has "${host}"`).join(' or ');
 
-            let query = '';
+            let usualQuery = '';
+            let noLogsQuery = '';
+            let otherQuery = '';
             let emailStatement = '';
 
             switch (queryType) {
                 case 'heartbeat':
-                    query = `Heartbeat\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
+                    otherQuery = `Heartbeat\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
                     emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\n<b>The following host(s) have been observed to have stopped sending heartbeats:</b>\n\n<b>Hostname(s):</b>\n<b>Last Heartbeat:</b>\n<b>Duration Since Last Log:</b>\n\nAttached is a screenshot for your reference.\n\n<b>Recommendations:</b>\nThe NTT MDR team recommends that the responsible team(s) for each device:\n1. Review the status of the system.\n2. Verify if the system is correctly configured to send security logs to NTT (this might be via a log forwarder).\n3. Determine if the system should not be monitored for regular logs (e.g., it is a test system or is offline for a period).`;
                     break;
                 case 'lograte':
                     const logTable = document.getElementById('logTable').value;
-                    const usualQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize count() by bin(TimeGenerated, 1d), Computer\n| render timechart`;
-                    const noLogsQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
-                    query = `Usual Query:\n${usualQuery}\n\nIf we are no longer receiving logs:\n${noLogsQuery}`;
+                    usualQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize count() by bin(TimeGenerated, 1d), Computer\n| render timechart`;
+                    noLogsQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
                     emailStatement = generateEmailStatement();
                     break;
                 case 'heartbeatLatency':
-                    query = `Heartbeat\n| where TimeGenerated > ago(48h)\n| where ${hostCondition}\n| extend E2EIngestionLatency = ingestion_time() - TimeGenerated\n| extend AgentLatency = ingestion_time() - TimeGenerated\n| extend AgentLatencyMin = todouble(datetime_diff("Second", ingestion_time(), TimeGenerated)) / 60\n| extend AgentLatencyHMS = format_timespan(AgentLatency, 'h:m:s')\n| summarize \n    percentiles(E2EIngestionLatency, 50, 95),\n    percentiles(AgentLatency, 50, 95)\n    by bin(TimeGenerated, 30m), Computer, AgentLatencyHMS`;
+                    otherQuery = `Heartbeat\n| where TimeGenerated > ago(48h)\n| where ${hostCondition}\n| extend E2EIngestionLatency = ingestion_time() - TimeGenerated\n| extend AgentLatency = ingestion_time() - TimeGenerated\n| extend AgentLatencyMin = todouble(datetime_diff("Second", ingestion_time(), TimeGenerated)) / 60\n| extend AgentLatencyHMS = format_timespan(AgentLatency, 'h:m:s')\n| summarize \n    percentiles(E2EIngestionLatency, 50, 95),\n    percentiles(AgentLatency, 50, 95)\n    by bin(TimeGenerated, 30m), Computer, AgentLatencyHMS`;
                     emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\nWe have received a <b>"Security Alert - CLIENT-AgentHeartbeatLatency"</b>.\n\n<b>Entity involved in the alert:</b>\n\n<b>Hostname:</b> \n\n<b>Investigation:</b>\nWe have identified a more than 6-second latency in emitting heartbeat logs for the following hosts.\n\nA significant increase in latency could indicate:\n• An overloaded agent host\n• An overloaded VPN (if applicable)\n• An issue with site internet connectivity (for on-prem agents)\n• An issue with the agent host\n• A large volume of logs\n• An issue with Log Analytics\n• A significant time change on the agent host (ensure NTP is used, if possible)\n\nPlease find the attachment for your reference. We suggest validating the latency on the affected hosts.\n\nKind regards,`;
                     break;
                 case 'tableCountMonitor':
                     const tableName = document.getElementById('logTable').value;
-                    query = `${tableName}\n| where TimeGenerated >= ago(7d)\n| summarize count() by bin(TimeGenerated, 1d)\n| render timechart`;
+                    otherQuery = `${tableName}\n| where TimeGenerated >= ago(7d)\n| summarize count() by bin(TimeGenerated, 1d)\n| render timechart`;
                     emailStatement = `Hello Team,\n\nGreetings of the day!\n\nWe appear to be receiving fewer logs than usual from table "${tableName}".\n\nThe NTT MDR team recommends that the team(s) responsible for each device:\n1) Review the status of the system.\n2) Whether the system is correctly set up to send security logs to NTT (this might be via a log forwarder).\n3) Whether the system should not be monitored for regular logs (e.g., it's a test system or is offline for a period).`;
                     break;
             }
 
-            document.getElementById('kqlOutput').textContent = query;
+            document.getElementById('usualQueryOutput').textContent = usualQuery;
+            document.getElementById('noLogsQueryOutput').textContent = noLogsQuery;
+            document.getElementById('otherQueryOutput').textContent = otherQuery;
             document.getElementById('emailOutput').innerHTML = emailStatement;
+
+            // Show/hide appropriate query containers
+            document.getElementById('usualQueryContainer').style.display = queryType === 'lograte' ? 'block' : 'none';
+            document.getElementById('noLogsQueryContainer').style.display = queryType === 'lograte' ? 'block' : 'none';
+            document.getElementById('otherQueryContainer').style.display = queryType !== 'lograte' ? 'block' : 'none';
         }
 
         function generateEmailStatement() {
