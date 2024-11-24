@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://wallpapers.com/images/high/world-map-cyber-security-ivcowv89j1g1ff4m.webp');
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        label, select, input, textarea, button {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        select, input, textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .footer {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            font-size: small;
+            background-image: url('data:image/png;base64,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');
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Query Generator</h1>
+        <form id="queryForm">
+            <label for="queryType">Select Query Type:</label>
+            <select id="queryType" name="queryType" onchange="toggleQueryInputs()">
+                <option value="">Select a query type</option>
+                <option value="heartbeat">Heartbeat Query</option>
+                <option value="lograte">Log Rate Query</option>
+                <option value="heartbeatLatency">Heartbeat Latency Query</option>
+                <option value="tableCountMonitor">Table Count Monitor</option>
+            </select>
+
+            <div id="commonInputs" style="display:none;">
+                <label for="hostType">Select Host Type:</label>
+                <select id="hostType" name="hostType" onchange="toggleHostInput()">
+                    <option value="single">Single Host</option>
+                    <option value="multiple">Multiple Hosts</option>
+                </select>
+
+                <div id="hostInput">
+                    <label for="hosts">Enter Hostname(s):</label>
+                    <textarea id="hosts" name="hosts" rows="5" placeholder="Enter one hostname per line" required></textarea>
+                </div>
+
+                <div id="exclusionInput" style="display:none;">
+                    <label for="excludedHosts">Enter Excluded Hostname(s):</label>
+                    <textarea id="excludedHosts" name="excludedHosts" rows="3" placeholder="Enter escalated hostnames (one per line)"></textarea>
+                </div>
+            </div>
+
+            <div id="lograteInputs" style="display:none;">
+                <label for="logTable">Enter Table Name:</label>
+                <input type="text" id="logTable" name="logTable" required>
+            </div>
+
+            <button type="button" onclick="generateQuery()">Generate Query</button>
+        </form>
+
+        <h2>Generated KQL Query:</h2>
+        <pre id="kqlOutput"></pre>
+        <button onclick="copyToClipboard('kqlOutput')">Copy KQL Query</button>
+
+        <h2>Email Statement:</h2>
+        <div id="emailTypeContainer" style="display:none;">
+            <label for="emailType">Select Email Type:</label>
+            <select id="emailType" name="emailType" >
+                <option value="fewerLogs">Receiving Fewer Logs Than Usual</option>
+                <option value="noLogs">No Longer Receiving Logs</option>
+            </select>
+        </div>
+        <pre id="emailOutput"></pre>
+        <button onclick="copyToClipboard('emailOutput')">Copy Email Statement</button>
+
+        <div class="footer">Created by Manikandan Velayutham</div>
+    </div>
+
+    <script>
+        function toggleQueryInputs() {
+            const queryType = document.getElementById('queryType').value;
+            document.getElementById('commonInputs').style.display = ['heartbeat', 'lograte', 'heartbeatLatency'].includes(queryType) ? 'block' : 'none';
+            document.getElementById('lograteInputs').style.display = ['lograte', 'tableCountMonitor'].includes(queryType) ? 'block' : 'none';
+            document.getElementById('emailTypeContainer').style.display = queryType === 'lograte' ? 'block' : 'none';
+        }
+
+        function toggleHostInput() {
+            const hostType = document.getElementById('hostType').value;
+            document.getElementById('hosts').placeholder = hostType === 'single' ? "Enter single hostname" : "Enter one hostname per line";
+            document.getElementById('exclusionInput').style.display = hostType === 'multiple' ? 'block' : 'none';
+        }
+
+        function generateQuery() {
+            const queryType = document.getElementById('queryType').value;
+            const hostsInput = document.getElementById('hosts').value.trim();
+            const hostsArray = hostsInput.split('\n').map(host => host.replace(/ - .*/, '').trim()).filter(host => host);
+
+            const excludedInput = document.getElementById('excludedHosts').value.trim();
+            const excludedArray = excludedInput.split('\n').map(host => host.trim()).filter(host => host);
+
+            const filteredHostsArray = hostsArray.filter(host => !excludedArray.includes(host));
+            const hostCondition = filteredHostsArray.map(host => `Computer has "${host}"`).join(' or ');
+
+            let query = '';
+            let emailStatement = '';
+
+            switch (queryType) {
+                case 'heartbeat':
+                    query = `Heartbeat\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
+                    emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\n<b>The following host(s) have been observed to have stopped sending heartbeats:</b>\n\n<b>Hostname(s):</b>\n<b>Last Heartbeat:</b>\n<b>Duration Since Last Log:</b>\n\nAttached is a screenshot for your reference.\n\n<b>Recommendations:</b>\nThe NTT MDR team recommends that the responsible team(s) for each device:\n1. Review the status of the system.\n2. Verify if the system is correctly configured to send security logs to NTT (this might be via a log forwarder).\n3. Determine if the system should not be monitored for regular logs (e.g., it is a test system or is offline for a period).`;
+                    break;
+                case 'lograte':
+                    const logTable = document.getElementById('logTable').value;
+                    const usualQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize count() by bin(TimeGenerated, 1d), Computer\n| render timechart`;
+                    const noLogsQuery = `${logTable}\n| where TimeGenerated >= ago(7d)\n| where ${hostCondition}\n| summarize max(TimeGenerated) by Computer\n| extend Howlongago=(now() - max_TimeGenerated)\n| extend Array1 = split(Howlongago, ":")\n| extend hrs = Array1[0]\n| extend mins = Array1[1]\n| extend sec = Array1[2]\n| extend howlongsincelastlog = strcat(hrs," hrs ", mins, " mins ", sec, " sec ")\n| project max_TimeGenerated, Computer, Howlongago, howlongsincelastlog`;
+                    query = `Usual Query:\n${usualQuery}\n\nIf we are no longer receiving logs:\n${noLogsQuery}`;
+                    emailStatement = generateEmailStatement();
+                    break;
+                case 'heartbeatLatency':
+                    query = `Heartbeat\n| where TimeGenerated > ago(48h)\n| where ${hostCondition}\n| extend E2EIngestionLatency = ingestion_time() - TimeGenerated\n| extend AgentLatency = ingestion_time() - TimeGenerated\n| extend AgentLatencyMin = todouble(datetime_diff("Second", ingestion_time(), TimeGenerated)) / 60\n| extend AgentLatencyHMS = format_timespan(AgentLatency, 'h:m:s')\n| summarize \n    percentiles(E2EIngestionLatency, 50, 95),\n    percentiles(AgentLatency, 50, 95)\n    by bin(TimeGenerated, 30m), Computer, AgentLatencyHMS`;
+                    emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\nWe have received a <b>"Security Alert - CLIENT-AgentHeartbeatLatency"</b>.\n\n<b>Entity involved in the alert:</b>\n\n<b>Hostname:</b> \n\n<b>Investigation:</b>\nWe have identified a more than 6-second latency in emitting heartbeat logs for the following hosts.\n\nA significant increase in latency could indicate:\n• An overloaded agent host\n• An overloaded VPN (if applicable)\n• An issue with site internet connectivity (for on-prem agents)\n• An issue with the agent host\n• A large volume of logs\n• An issue with Log Analytics\n• A significant time change on the agent host (ensure NTP is used, if possible)\n\nPlease find the attachment for your reference. We suggest validating the latency on the affected hosts.\n\nKind regards,`;
+                    break;
+                case 'tableCountMonitor':
+                    const tableName = document.getElementById('logTable').value;
+                    query = `${tableName}\n| where TimeGenerated >= ago(7d)\n| summarize count() by bin(TimeGenerated, 1d)\n| render timechart`;
+                    emailStatement = `Hello Team,\n\nGreetings of the day!\n\nWe appear to be receiving fewer logs than usual from table "${tableName}".\n\nThe NTT MDR team recommends that the team(s) responsible for each device:\n1) Review the status of the system.\n2) Whether the system is correctly set up to send security logs to NTT (this might be via a log forwarder).\n3) Whether the system should not be monitored for regular logs (e.g., it's a test system or is offline for a period).`;
+                    break;
+            }
+
+            document.getElementById('kqlOutput').textContent = query;
+            document.getElementById('emailOutput').innerHTML = emailStatement;
+        }
+
+        function generateEmailStatement() {
+            const logTable = document.getElementById('logTable').value;
+            const emailType = document.getElementById('emailType').value;
+
+            let emailStatement = '';
+
+            if (emailType === 'fewerLogs') {
+                emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\n<b>We appear to be receiving fewer logs than usual from table "${logTable}" from the following source:</b>\n\n<b>Hostname:</b> \n<b>Count:</b>\n<b>Date:</b>\n\n<b>Hostname:</b> \n<b>Count:</b>\n<b>Date:</b>\n\n<b>The NTT MDR team recommends that the team(s) responsible for each device:</b>\n1) Review the status of the system.\n2) Whether the system is correctly set up to send security logs to NTT (this might be via a log forwarder).\n3) Whether the system should not be monitored for regular logs (e.g., it's a test system or is offline for a period).\n`;
+            } else if (emailType === 'noLogs') {
+                emailStatement = `Hello Team,\n\n<b>Greetings of the day!</b>\n\n<b>We appear to be no longer receiving logs from table "${logTable}" from the following source:</b>\n\n<b>Computer:</b> \n<b>Table:</b> \n<b>LastLog [UTC]:</b> \n<b>Last Log Since:</b> \n\n<b>The NTT MDR team recommends that the team(s) responsible for each device:</b>\n1) Review the status of the system.\n2) Whether the system is correctly set up to send security logs to NTT (this might be via a log forwarder).\n3) Whether the system should not be monitored for regular logs (e.g., it's a test system or is offline for a period).\n`;
+            }
+
+            return emailStatement;
+        }
+
+        document.getElementById('emailType').addEventListener('change', function() {
+            document.getElementById('emailOutput').innerHTML = generateEmailStatement();
+        });
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
